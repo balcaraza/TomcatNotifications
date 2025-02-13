@@ -42,3 +42,4 @@ db-dev.properties
 db-qa.properties
 db-prod.properties
 TomcatNotifications.properties
+users.properties

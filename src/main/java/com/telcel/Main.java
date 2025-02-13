@@ -60,25 +60,18 @@ public class Main {
             // Extraer los usernames del archivo XML
             List<String> usernames = tomcatUsersXML.extractUsernames(rutaArchivo);
 
-            // Verificar si se encontraron usernames
             if (usernames.isEmpty()) {
                 System.out.println("❌ No se encontraron usernames.");
             } else {
-                // Instanciar el lector de propiedades de usuarios
                 UsersProperties usuariosProperties = new UsersProperties();
 
-                // Para cada username, obtener las propiedades y hacer lo necesario
                 for (String username : usernames) {
-                    System.out.println("Usuario encontrado: " + username);
+                    System.out.println("\nUsuario encontrado: " + username);
 
-                    // Obtener las propiedades (por ejemplo, password y role)
-                    String passwordUsuario = usuariosProperties.obtenerPropiedad(username, "username");
-                    String roleUsuario = usuariosProperties.obtenerPropiedad(username, "role");
+                    List<String> propiedadesUsuario = usuariosProperties.obtenerPropiedades(username);
 
-                    // Imprimir los valores obtenidos
-                    if (passwordUsuario != null && roleUsuario != null) {
-                        System.out.println("Usuario " + username + ": " + passwordUsuario);
-
+                    if (!propiedadesUsuario.isEmpty()) {
+                        System.out.println("Usuario " + username + ": " + propiedadesUsuario);
                     } else {
                         System.out.println("❌ No se encontraron propiedades para el usuario: " + username);
                     }
@@ -87,6 +80,7 @@ public class Main {
         } else {
             System.out.println("❌ No se encontró el archivo tomcat-users.xml.");
         }
+
 
 
 

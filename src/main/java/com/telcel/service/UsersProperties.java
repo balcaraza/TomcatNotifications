@@ -1,47 +1,40 @@
 package com.telcel.service;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
-public class UsersProperties {
+
+public class UsersProperties{
     private Properties properties;
 
     public UsersProperties() {
         properties = new Properties();
-
-        // Usamos el classloader para cargar el archivo de propiedades desde el classpath
-        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("Users.properties")) {
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("users.properties")) {
             if (inputStream == null) {
-                System.err.println("❌ No se encontró el archivo de propiedades: Users.properties");
-                throw new IOException("No se pudo cargar el archivo de propiedades");
+                throw new IOException("No se encontró el archivo de propiedades: users.properties");
             }
-            // Cargar el archivo de propiedades
             properties.load(inputStream);
+            System.out.println("✅ Archivo de propiedades cargado correctamente.");
         } catch (IOException e) {
             System.err.println("❌ Error al cargar el archivo de propiedades: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
-    public Map<String, String> obtenerPropiedades(String username) {
-        Map<String, String> userProperties = new HashMap<>();
+    public List<String> obtenerPropiedades(String username) {
+        username = username.toLowerCase();  // 🔹 Convertir a minúsculas para buscar correctamente
 
-        // Suponemos que las propiedades del usuario son como 'username.password', 'username.role', etc.
-        String password = properties.getProperty(username + ".password");
-        String role = properties.getProperty(username + ".role");
 
-        // Agregar las propiedades al mapa si existen
-        if (password != null) userProperties.put("password", password);
-        if (role != null) userProperties.put("role", role);
+        System.out.println("Buscando propiedades para: " + username);
+        String propiedades = properties.getProperty(username);
 
-        // Si no se encuentran propiedades para el usuario, imprimimos advertencias
-        if (userProperties.isEmpty()) {
+        if (propiedades == null || propiedades.trim().isEmpty()) {
             System.err.println("❌ No se encontraron propiedades para el usuario: " + username);
+            return Collections.emptyList();
         }
 
-        return userProperties;
+        System.out.println("✅ Propiedades encontradas para " + username + ": " + propiedades);
+        return Arrays.asList(propiedades.split("\\|"));
     }
 }
