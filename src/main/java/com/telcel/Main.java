@@ -5,11 +5,14 @@ import com.telcel.model.ServerCredentials;
 import com.telcel.service.*;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Main {
     public static void main(String[] args) {
-        String ambiente = "DEV";
+        String ambiente = "PROD";
         System.out.println("Ambiente detectado: " + ambiente);
         // Cargar las credenciales del ambiente detectado
         DataBaseConfig.cargarCredenciales(ambiente);
@@ -53,6 +56,7 @@ public class Main {
         TomcatUsersXML tomcatUsersXML = new TomcatUsersXML();
 
         String rutaArchivo = tomcatUsersXML.searchFile("/tomcat/apache-tomcat-7.0.99/conf/","tomcat-users.xml");
+        Map<String, List<String>> datosUsuarios = new HashMap<>();
 
         if (rutaArchivo != null && !rutaArchivo.isEmpty()) {
             System.out.println("✅ Archivo encontrado en: " + rutaArchivo);
@@ -65,21 +69,31 @@ public class Main {
             } else {
                 UsersProperties usuariosProperties = new UsersProperties();
 
+
                 for (String username : usernames) {
                     System.out.println("\nUsuario encontrado: " + username);
-
                     List<String> propiedadesUsuario = usuariosProperties.obtenerPropiedades(username);
 
                     if (!propiedadesUsuario.isEmpty()) {
                         System.out.println("Usuario " + username + ": " + propiedadesUsuario);
+                        datosUsuarios.put(username, propiedadesUsuario);
                     } else {
                         System.out.println("❌ No se encontraron propiedades para el usuario: " + username);
                     }
+                }
+                // Generar el archivo Excel si hay datos
+                if (!datosUsuarios.isEmpty()) {
+                    String nombreArchivoExcel = "usuarios.xlsx";
+                    ExcelGenerator.generarExcel(nombreArchivoExcel, datosUsuarios);
+                    System.out.println("✅ Excel generado exitosamente: " + nombreArchivoExcel);
+                } else {
+                    System.out.println("❌ No hay datos para generar el Excel.");
                 }
             }
         } else {
             System.out.println("❌ No se encontró el archivo tomcat-users.xml.");
         }
+
 
 
 
