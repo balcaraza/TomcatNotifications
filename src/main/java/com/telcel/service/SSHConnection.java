@@ -10,12 +10,12 @@ public class SSHConnection {
     private static final int TIMEOUT = 10000; // 10 segundos
     private static Session session;
 
-    public static void conectarSSH(String host, int port, String user, String password) {
+    public static void conectarSSH(String host, String port, String user, String password) {
         JSch jsch = new JSch();
         session = null;
         try {
             // Crear la sesión SSH
-            session = jsch.getSession(user, host, port);
+            session = jsch.getSession(user, host, Integer.parseInt(port));
             session.setPassword(password);
             session.setConfig("StrictHostKeyChecking", "no"); // Evita la verificación de claves del host
             session.connect(TIMEOUT); // Conectar con timeout

@@ -23,18 +23,14 @@ public class UsersProperties{
     }
 
     public List<String> obtenerPropiedades(String username) {
-        username = username.toLowerCase();  // 🔹 Convertir a minúsculas para buscar correctamente
+        username = username.toLowerCase();
 
-
-        System.out.println("Buscando propiedades para: " + username);
         String propiedades = properties.getProperty(username);
 
         if (propiedades == null || propiedades.trim().isEmpty()) {
-            System.err.println("❌ No se encontraron propiedades para el usuario: " + username);
             return Collections.emptyList();
         }
 
-        System.out.println("✅ Propiedades encontradas para " + username + ": " + propiedades);
         return Arrays.asList(propiedades.split("\\|"));
     }
 }

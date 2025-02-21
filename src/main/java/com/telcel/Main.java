@@ -3,101 +3,63 @@ package com.telcel;
 import com.telcel.config.*;
 import com.telcel.model.ServerCredentials;
 import com.telcel.service.*;
+import java.io.IOException;
 
-import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class Main {
-    public static void main(String[] args) {
-        String ambiente = "PROD";
-        System.out.println("Ambiente detectado: " + ambiente);
-        // Cargar las credenciales del ambiente detectado
+
+    public static void main(String[] args) throws IOException {
+//        String directorio = "C:/Users/CONSULTOR/Documents/Descargas/F-00.62.00.00.00-028 Registro de Cuentas Activas_RemedyControl.xlsx";
+        String directorio = "/home/remedy/archivos/correoRCA/F-00.62.00.00.00-028 Registro de Cuentas Activas_RemedyControl.xlsx";
+        String ambiente = DeployEnvironment.detectarAmbiente();
+
         DataBaseConfig.cargarCredenciales(ambiente);
 
-        // Imprimir las credenciales
         System.out.println("HOST: " + DataBaseConfig.getDbHost());
         System.out.println("PORT: " + DataBaseConfig.getDbPort());
         System.out.println("SERVICENAME: " + DataBaseConfig.getDbServiceName());
-        System.out.println("Usuario: " + DataBaseConfig.getDbUsername());
-        System.out.println("Contraseña: " + DataBaseConfig.getDbPassword());
 
-/// Iniciar la conexión
-        DBConnection.conectar();
+        ServerCredentials credentials = ServerCredentialsManager.obtenerCredencialesServidor();
 
-        // Obtener la conexión para verificar si es válida
-        Connection connection = DBConnection.getConnection();
-        if (connection != null) {
-            System.out.println("Conexión obtenida correctamente.");
-        } else {
-            System.out.println("No se pudo obtener la conexión.");
-            return;
-        }
+        ServerConfig.ConectarServidor(ambiente); //CAMBIAR A AMBIENTE
 
-        // Obtener las credenciales del servidor desde la BD
-        ServerCredentials credentials = ServerCredentialsManager.obtenerCredencialesServidor(ambiente);
-        if (credentials != null) {
-            System.out.println("Contraseña del servidor obtenida: " + credentials.getPassword());
-        } else {
-            System.out.println("No se pudieron obtener las credenciales del servidor.");
-        }
-
-        String host = "10.191.205.236";
-        int port = 22; // Puerto SSH
-        String user = "remedy"; // Usuario SSH
-        String password = "rcROOT#2025"; // Contraseña SSH
-
-
-        // Probar conexión SSH
+        String host = ServerConfig.getSVIP();
+        String port = ServerConfig.getSVPort();
+        String user = ServerConfig.getSVUser();
+        String password = credentials.getPassword();
+DBConnection.cerrarConexion();
         SSHConnection.conectarSSH(host, port, user, password);
 
-        TomcatUsersXML tomcatUsersXML = new TomcatUsersXML();
+        List<String> usernames = ObtenerUsers.ObtenerListaUsers(ambiente); //CAMBIAR A AMBIENTE
+        System.out.println("usuarios - " + usernames.toString());
 
-        String rutaArchivo = tomcatUsersXML.searchFile("/tomcat/apache-tomcat-7.0.99/conf/","tomcat-users.xml");
         Map<String, List<String>> datosUsuarios = new HashMap<>();
+        if (usernames.isEmpty()) {
+            System.out.println("❌ No se encontraron usernames.");
+        } else {
+            UsersProperties usuariosProperties = new UsersProperties();
+            for (String username : usernames) {
+                List<String> propiedadesUsuario = usuariosProperties.obtenerPropiedades(username);
 
-        if (rutaArchivo != null && !rutaArchivo.isEmpty()) {
-            System.out.println("✅ Archivo encontrado en: " + rutaArchivo);
-
-            // Extraer los usernames del archivo XML
-            List<String> usernames = tomcatUsersXML.extractUsernames(rutaArchivo);
-
-            if (usernames.isEmpty()) {
-                System.out.println("❌ No se encontraron usernames.");
-            } else {
-                UsersProperties usuariosProperties = new UsersProperties();
-
-
-                for (String username : usernames) {
-                    System.out.println("\nUsuario encontrado: " + username);
-                    List<String> propiedadesUsuario = usuariosProperties.obtenerPropiedades(username);
-
-                    if (!propiedadesUsuario.isEmpty()) {
-                        System.out.println("Usuario " + username + ": " + propiedadesUsuario);
-                        datosUsuarios.put(username, propiedadesUsuario);
-                    } else {
-                        System.out.println("❌ No se encontraron propiedades para el usuario: " + username);
-                    }
-                }
-                // Generar el archivo Excel si hay datos
-                if (!datosUsuarios.isEmpty()) {
-                    String nombreArchivoExcel = "usuarios.xlsx";
-                    ExcelGenerator.generarExcel(nombreArchivoExcel, datosUsuarios);
-                    System.out.println("✅ Excel generado exitosamente: " + nombreArchivoExcel);
-                } else {
-                    System.out.println("❌ No hay datos para generar el Excel.");
+                if (!propiedadesUsuario.isEmpty()) {
+                    datosUsuarios.put(username, propiedadesUsuario);
                 }
             }
-        } else {
-            System.out.println("❌ No se encontró el archivo tomcat-users.xml.");
+            System.out.println("Termina el recopilado de datos");
+            if (!datosUsuarios.isEmpty()) {
+                System.out.println("Generando el excel Main");
+                ExcelGenerator.generarExcel(directorio, datosUsuarios);
+
+                EmailSender.Email(ambiente, host, directorio); //CAMBIAR A AMBIENTE
+            } else {
+                System.out.println("❌ No hay datos para generar el Excel.");
+            }
         }
-
-
-
-
-
+        
         SSHConnection.cerrarConexion();
+        
     }
 }

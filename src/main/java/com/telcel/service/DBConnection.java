@@ -5,7 +5,9 @@ import com.telcel.config.DataBaseConfig;
 import java.sql.*;
 
 public class DBConnection {
+
     private static Connection connection;
+
     public static void conectar() {
         try {
             // Cargar credenciales desde DataBaseConfig
@@ -15,15 +17,9 @@ public class DBConnection {
             String dbUsername = DataBaseConfig.getDbUsername();
             String dbPassword = DataBaseConfig.getDbPassword();
 
-            // Construcción de la URL de conexión para Oracle
-            String url = "jdbc:oracle:thin:@//" + dbHost + ":" + dbPort + "/" + dbServiceName;
-
-
-
-            // Cargar el driver de Oracle
+            String url = "jdbc:oracle:thin:@" + dbHost + ":" + dbPort + "/" + dbServiceName;
             Class.forName("oracle.jdbc.OracleDriver");
 
-            // Establecer conexión
             connection = DriverManager.getConnection(url, dbUsername, dbPassword);
             System.out.println("✅ Conexión establecida con éxito a la base de datos.");
 
@@ -37,14 +33,25 @@ public class DBConnection {
     }
 
     public static Connection getConnection() {
+        if (connection == null) {
+            conectar();  // Solo se conecta si no hay una conexión activa
+        }
         return connection;
     }
 
     public static void cerrarConexion() {
         try {
-            if (connection != null && !connection.isClosed()) {
+            if (connection != null) {
+                if (connection.isClosed()) {
+                    System.out.println("⚠️ La conexión ya estaba cerrada.");
+                    return;
+                }
+
                 connection.close();
                 System.out.println("✅ Conexión cerrada correctamente.");
+                connection = null; // Evita reutilizar una conexión cerrada
+            } else {
+                System.out.println("⚠️ No hay conexión activa para cerrar.");
             }
         } catch (SQLException e) {
             System.err.println("Error al cerrar la conexión: " + e.getMessage());

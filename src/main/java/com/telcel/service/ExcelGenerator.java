@@ -34,12 +34,9 @@ public class ExcelGenerator {
                 }
             }
 
-            // Autoajustar columnas
             for (int i = 0; i < encabezados.length; i++) {
                 sheet.autoSizeColumn(i);
             }
-
-            // Escribir archivo
             try (FileOutputStream fileOut = new FileOutputStream(nombreArchivo)) {
                 workbook.write(fileOut);
                 System.out.println("✅ Archivo Excel generado exitosamente: " + nombreArchivo);

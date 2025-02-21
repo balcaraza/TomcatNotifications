@@ -15,10 +15,23 @@
     </properties>
     <dependencies>
         <dependency>
+            <groupId>com.jcraft</groupId>
+            <artifactId>jsch</artifactId>
+            <version>0.1.55</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>javax.mail</artifactId>
+            <version>1.6.2</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.oracle.database.jdbc</groupId>
             <artifactId>ojdbc8</artifactId>
-            <version>19.8.0.0</version>
+            <version>19.8.0.0</version> 
         </dependency>
+
         <dependency>
             <groupId>com.jcraft</groupId>
             <artifactId>jsch</artifactId>
@@ -39,7 +52,53 @@
             <artifactId>commons-collections4</artifactId>
             <version>4.4</version>
         </dependency>
-
+        <dependency>
+            <groupId>jakarta.activation</groupId>
+            <artifactId>jakarta.activation-api</artifactId>
+            <version>1.2.2</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.12.0</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-web-api</artifactId>
+            <version>7.0</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Main-Class>com.telcel.Main</Main-Class> <!-- Reemplaza con tu clase principal -->
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>    
+                <groupId>org.apache.maven.plugins</groupId>    
+                <artifactId>maven-shade-plugin</artifactId>    
+                <version>3.2.4</version>    
+                <executions>        
+                    <execution>            
+                        <phase>package</phase>            
+                        <goals>                
+                            <goal>shade</goal>            
+                        </goals>        
+                    </execution>    
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
